@@ -3,8 +3,6 @@ using System.Threading;
 
 public class RingBuffer<T>
 {
-    public object fedSignal = new object();
-
     private volatile Entity[] buffer;
     private const int BufferSize = 128;
     private SpinLock pushLock = new SpinLock(false);
@@ -37,7 +35,6 @@ public class RingBuffer<T>
             entity.value = value;
             Volatile.Write(ref buffer[pushIndex], entity);
             pushIndex = (pushIndex + 1) % buffer.Length;
-            Monitor.Pulse(fedSignal);
         }
         finally
         {
@@ -82,7 +79,6 @@ public class RingBuffer<T>
 
             popIndex = -1;
             pushIndex = 0;
-            Monitor.PulseAll(fedSignal);
         }
         finally
         {
