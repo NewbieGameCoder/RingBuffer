@@ -69,6 +69,27 @@ public class RingBuffer<T>
         return false;
     }
 
+    public bool Clear()
+    {
+        bool bTaken = false;
+        try
+        {
+            pushLock.Enter(ref bTaken);
+            if (!bTaken) return false;
+
+            popIndex = -1;
+            pushIndex = 0;
+        }
+        finally
+        {
+            if (bTaken)
+            {
+                pushLock.Exit(true);
+            }
+        }
+        return true;
+    }
+
     private void Resize(int tempPopIndex)
     {
         int oldLen = buffer.Length;
