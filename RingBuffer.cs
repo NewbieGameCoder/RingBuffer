@@ -48,24 +48,19 @@ public class RingBuffer<T>
 
     public bool Pop(out T value)
     {
-        value = default(T);
         int tempPopIndex = popIndex;
         int nextPopIndex = (tempPopIndex + 1) % buffer.Length;
         if (nextPopIndex != pushIndex)
         {
-            if (Interlocked.CompareExchange(ref popIndex, nextPopIndex, tempPopIndex) != tempPopIndex)
-            {
-                return false;
-            }
-
             var entity = Volatile.Read(ref buffer[nextPopIndex]);
-            if (entity != null)
+            value = entity.value;
+            if (Interlocked.CompareExchange(ref popIndex, nextPopIndex, tempPopIndex) == tempPopIndex)
             {
-                value = entity.value;
                 return true;
             }
         }
 
+        value = default(T);
         return false;
     }
 
